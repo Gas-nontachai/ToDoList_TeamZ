@@ -5,6 +5,11 @@
   --foreground: #171717;
 }
 
+.swal2-container {
+  z-index: 2000 !important;
+  /* มากกว่า Dialog ของ MUI */
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

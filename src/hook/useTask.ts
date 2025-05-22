@@ -1,8 +1,9 @@
 import { getDBStore } from '@/utils/connect';
 import { Task } from '@/misc/types';
+const prefix = 'tasks'
 
 const getTaskBy = async (filter: Partial<Task> = {}): Promise<{ docs: Task[], totalDocs: number }> => {
-    const store = await getDBStore();
+    const store = await getDBStore(prefix);
     const request = store.getAll();
 
     return new Promise((resolve, reject) => {
@@ -27,7 +28,7 @@ const getTaskBy = async (filter: Partial<Task> = {}): Promise<{ docs: Task[], to
 };
 
 const getTaskByID = async (data: { task_id: string }): Promise<Task> => {
-    const store = await getDBStore();
+    const store = await getDBStore(prefix);
     const request = store.get(data.task_id);
 
     return new Promise((resolve, reject) => {
@@ -46,7 +47,7 @@ const getTaskByID = async (data: { task_id: string }): Promise<Task> => {
 };
 
 const insertTask = async (data: Task): Promise<Task> => {
-    const store = await getDBStore();
+    const store = await getDBStore(prefix);
     const request = store.add(data);
 
     return new Promise((resolve, reject) => {
@@ -61,7 +62,7 @@ const insertTask = async (data: Task): Promise<Task> => {
 };
 
 const updateTaskBy = async (data: Task): Promise<Task> => {
-    const store = await getDBStore();
+    const store = await getDBStore(prefix);
     const request = store.put(data);
 
     return new Promise((resolve, reject) => {
@@ -76,7 +77,7 @@ const updateTaskBy = async (data: Task): Promise<Task> => {
 };
 
 const deleteTaskBy = async (data: { task_id: string }): Promise<void> => {
-    const store = await getDBStore();
+    const store = await getDBStore(prefix);
     const request = store.delete(data.task_id);
 
     return new Promise((resolve, reject) => {

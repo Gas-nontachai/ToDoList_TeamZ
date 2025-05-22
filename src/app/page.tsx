@@ -1,22 +1,53 @@
 "use client";
 import React, { useCallback, useEffect, useState } from "react";
 import Swal from 'sweetalert2';
-import { CircularProgress, Typography, TextField, Button, List, ListItem, IconButton, Checkbox, Box, Select, Menu, MenuItem, Collapse, InputAdornment } from "@mui/material";
-import { Visibility, VisibilityOff, Search, ArrowDownward, ArrowUpward, AssignmentTurnedIn } from "@mui/icons-material";
-import { Delete, Edit, Sort, Clear, Add } from "@mui/icons-material";
+import {
+  CircularProgress,
+  Typography,
+  TextField,
+  Button,
+  List,
+  ListItem,
+  IconButton,
+  Checkbox,
+  Box,
+  Select,
+  Menu,
+  MenuItem,
+  Collapse,
+  InputAdornment
+} from "@mui/material";
+import {
+  Category,
+  Delete,
+  Edit,
+  Sort,
+  Clear,
+  Add,
+  Visibility,
+  VisibilityOff,
+  Search,
+  ArrowDownward,
+  ArrowUpward,
+  AssignmentTurnedIn
+} from "@mui/icons-material";
 import { formatDate } from "@/utils/date-helper"
 import { generateID } from "@/utils/generator-id"
 import { Task } from "@/misc/types";
-import { useTask } from "@/hook/hooks";
+import { useTask, useCategory } from "@/hook/hooks";
 import UpdateTask from "@/app/components/Task/Update";
+import ManageCategory from "@/app/components/Task/ManageCategory";
+import CompletedTask from "@/app/components/Task/CompletedTask";
 
 const TodoListPage: React.FC = () => {
   const { getTaskBy, insertTask, updateTaskBy, deleteTaskBy } = useTask();
+  const { getCategoryBy } = useCategory();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const [loading, setLoading] = useState<boolean>(true);
-  const [showCompleted, setShowCompleted] = useState(true);
+  const [show_completed, setShowCompleted] = useState(true);
   const [open_update, setOpenUpdate] = useState(false);
+  const [open_manage_category, setOpenManageCategory] = useState(false);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [task, setTask] = useState<Task>({
     task_id: "",
@@ -36,9 +67,7 @@ const TodoListPage: React.FC = () => {
   });
   const [filter_category, setFilterCategory] = useState<string>("All");
 
-  const [task_category_option] = useState<string[]>(
-    ["General", "Work", "Personal"]
-  );
+  const [task_category_option, setTaskCategoryOption] = useState<string[]>([]);
 
   const fetchTasks = useCallback(async () => {
     const { docs: res } = await getTaskBy();
@@ -71,12 +100,23 @@ const TodoListPage: React.FC = () => {
   useEffect(() => {
     try {
       fetchTasks();
+      fetchCategory()
     } catch (error) {
       console.error("Error fetching tasks:", error);
     } finally {
       setLoading(false);
     }
   }, [fetchTasks]);
+
+  const fetchCategory = async () => {
+    try {
+      const { docs: res } = await getCategoryBy();
+      const option = res.map((item) => item.category_name);
+      setTaskCategoryOption(option)
+    } catch (error) {
+      console.error("Error fetching category:", error);
+    }
+  };
 
   const addTask = async () => {
     if (!task.text.trim()) {
@@ -202,18 +242,21 @@ const TodoListPage: React.FC = () => {
     fetchTasks();
   };
 
-  const incompleteTasks = tasks.filter((task) => !task.completed);
-  const completedTasks = tasks.filter((task) => task.completed);
+  const incomplete_tasks = tasks.filter((task) => !task.completed);
+  const completed_tasks = tasks.filter((task) => task.completed);
 
   return (
-    <div className="flex flex-col items-center p-4 bg-gray-100 min-h-screen">
-      <h1 className="text-2xl font-bold mb-4 text-gray-800">To-Do List</h1>
-      <div className="flex items-center gap-2 mb-4">
+    <Box className="flex flex-col items-center p-4 bg-gray-100 min-h-screen">
+      <Typography variant="h4" className="text-2xl font-bold mb-4 text-gray-800">To-Do List</Typography>
+      <Box className="flex items-center gap-2 mb-4">
         <TextField
           label="New Task"
           variant="outlined"
           value={task.text}
           onChange={(e) => setTask({ ...task, text: e.target.value })}
+          onKeyUp={(e) => {
+            e.key === 'Enter' && addTask()
+          }}
           className="w-80"
           sx={{
             "& .MuiOutlinedInput-root": {
@@ -230,12 +273,26 @@ const TodoListPage: React.FC = () => {
                   displayEmpty
                   variant="standard"
                   sx={{ minWidth: "100px", marginRight: "8px" }}
+                  renderValue={(selected) =>
+                    selected === "" ? (
+                      <em>{task_category_option.length === 0 ? "กำลังโหลด..." : "เลือกหมวดหมู่"}</em>
+                    ) : (
+                      selected
+                    )
+                  }
+                  disabled={task_category_option.length === 0}
                 >
-                  {task_category_option.map((option) => (
-                    <MenuItem key={option} value={option}>
-                      {option}
+                  {task_category_option.length > 0 ? (
+                    task_category_option.map((option) => (
+                      <MenuItem key={option} value={option}>
+                        {option}
+                      </MenuItem>
+                    ))
+                  ) : (
+                    <MenuItem disabled value="">
+                      <em>ไม่มีข้อมูลหมวดหมู่</em>
                     </MenuItem>
-                  ))}
+                  )}
                 </Select>
                 <IconButton
                   onClick={addTask}
@@ -256,9 +313,13 @@ const TodoListPage: React.FC = () => {
             ),
           }}
         />
-      </div>
+        <Button variant="outlined" onClick={() => setOpenManageCategory(!open_manage_category)}>
+          <Category />
+          <Typography sx={{ marginX: 2 }}>Manage category</Typography>
+        </Button>
+      </Box>
 
-      <div className="flex items-center gap-2 mb-4">
+      <Box className="flex items-center gap-2 mb-4">
         <TextField
           label="Search"
           variant="outlined"
@@ -350,15 +411,15 @@ const TodoListPage: React.FC = () => {
         >
           <Clear fontSize="small" />
         </IconButton>
-      </div>
+      </Box>
       {
         loading == true ? (
-          <div style={{ display: "flex", justifyContent: "center", margin: "20px 0" }}>
+          <Box style={{ display: "flex", justifyContent: "center", margin: "20px 0" }}>
             <CircularProgress />
-          </div>
-        ) : incompleteTasks.length > 0 ? (
+          </Box>
+        ) : incomplete_tasks.length > 0 ? (
           <>
-            {incompleteTasks.map((t, index) => (
+            {incomplete_tasks.map((t, index) => (
               <List className="w-full max-w-md bg-white " key={index}>
                 <ListItem
                   key={index}
@@ -402,23 +463,23 @@ const TodoListPage: React.FC = () => {
       }
 
       {
-        completedTasks.length > 0 && (
+        completed_tasks.length > 0 && (
           <>
-            <div className="flex justify-between items-center mb-4 mt-8">
+            <Box className="flex justify-between items-center mb-4 mt-8">
               <Typography variant="h6" className="font-bold text-gray-800">
                 ✅ Completed Tasks
               </Typography>
 
               <Button
                 variant="contained"
-                onClick={() => setShowCompleted(!showCompleted)}
-                startIcon={showCompleted ? <VisibilityOff /> : <Visibility />}
+                onClick={() => setShowCompleted(!show_completed)}
+                startIcon={show_completed ? <VisibilityOff /> : <Visibility />}
                 size="small"
                 sx={{
-                  backgroundColor: showCompleted ? "#f87171" : "#3b82f6",
+                  backgroundColor: show_completed ? "#f87171" : "#3b82f6",
                   color: "white",
                   "&:hover": {
-                    backgroundColor: showCompleted ? "#dc2626" : "#2563eb",
+                    backgroundColor: show_completed ? "#dc2626" : "#2563eb",
                   },
                   paddingX: "12px",
                   borderRadius: "10px",
@@ -426,51 +487,11 @@ const TodoListPage: React.FC = () => {
                   marginLeft: "10px",
                 }}
               >
-                {showCompleted ? "Hide" : "Show"}
+                {show_completed ? "Hide" : "Show"}
               </Button>
-            </div>
-            <Collapse in={showCompleted} className="w-full max-w-md bg-white  " >
-              <List >
-                {completedTasks.map((t, index) => (
-                  <ListItem
-                    key={index}
-                    secondaryAction={
-                      <>
-                        <IconButton edge="end" aria-label="delete" onClick={() => deleteTask(t.task_id)}>
-                          <Delete />
-                        </IconButton>
-                      </>
-                    }
-                  >
-                    <Checkbox
-                      checked={t.completed}
-                      onChange={() => toggleTaskCompletion(t.task_id, false)}
-                    />
-                    <Box
-                      sx={{
-                        textDecoration: t.completed ? "line-through" : "none",
-                        textDecorationColor: t.completed ? "#1f2937" : "inherit",
-                        mb: 2
-                      }}
-                    >
-                      <Typography variant="h6" className="font-bold text-gray-800" >
-                        {t.text}
-                      </Typography>
-                      <Box sx={{ pl: 2 }}>
-                        <Typography variant="body2" className="text-gray-600" >
-                          Category: {t.category}
-                        </Typography>
-                        <Typography variant="body2" className="text-gray-600" >
-                          Created: {formatDate(t.createdAt, "dd/MM/yyyy HH:mm:ss")}
-                        </Typography>
-                        <Typography variant="body2" className="text-gray-600" >
-                          Completed: {t.completedAt && formatDate(t.completedAt, "dd/MM/yyyy HH:mm:ss")}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  </ListItem>
-                ))}
-              </List>
+            </Box>
+            <Collapse in={show_completed} className="w-full max-w-md bg-white  " >
+              <CompletedTask completedTasks={completed_tasks} deleteTask={deleteTask} toggleTaskCompletion={toggleTaskCompletion} />
             </Collapse>
           </>
         )
@@ -483,7 +504,16 @@ const TodoListPage: React.FC = () => {
         task_id={selected_task_id}
       />
 
-    </div >
+      <ManageCategory
+        open={open_manage_category}
+        onClose={() => {
+          fetchCategory()
+          setOpenManageCategory(false)
+        }}
+        onRefresh={fetchTasks}
+      />
+
+    </Box >
   );
 };
 
