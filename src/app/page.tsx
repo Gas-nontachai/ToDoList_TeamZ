@@ -244,9 +244,10 @@ const TodoListPage: React.FC = () => {
 
   const incomplete_tasks = tasks.filter((task) => !task.completed);
   const completed_tasks = tasks.filter((task) => task.completed);
+  const maxLength = 100;
 
   return (
-    <Box className="flex flex-col items-center p-4 bg-gray-100 min-h-screen">
+    <Box className="flex flex-col w-full min-h-screen p-4 bg-gray-100">
       <Typography variant="h4" className="text-2xl font-bold mb-4 text-gray-800">To-Do List</Typography>
       <Box className="flex items-center gap-2 mb-4">
         <TextField
@@ -260,12 +261,20 @@ const TodoListPage: React.FC = () => {
             }
           }}
           className="w-80"
+
           sx={{
             "& .MuiOutlinedInput-root": {
               borderRadius: "999px",
               paddingRight: "8px",
             },
           }}
+          inputProps={{ maxLength }}
+          helperText={
+            task.text.length >= maxLength
+              ? "You have reached the maximum length"
+              : `${task.text.length}/${maxLength} characters`
+          }
+          error={task.text.length >= maxLength}
           InputProps={{
             endAdornment: (
               <InputAdornment position="end">
@@ -422,7 +431,7 @@ const TodoListPage: React.FC = () => {
         ) : incomplete_tasks.length > 0 ? (
           <>
             {incomplete_tasks.map((t, index) => (
-              <List className="w-full max-w-md bg-white " key={index}>
+              <List className="w-full max-w-lg bg-white " key={index}>
                 <ListItem
                   key={index}
                   secondaryAction={
