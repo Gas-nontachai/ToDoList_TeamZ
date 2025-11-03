@@ -95,28 +95,28 @@ const TodoListPage: React.FC = () => {
 
     setTasks(filtered_tasks);
 
-  }, [filter_category, sort_order]);
+  }, [filter_category, sort_order, search_query, getTaskBy]);
+
+  const fetchCategory = useCallback(async () => {
+    try {
+      const { docs: res } = await getCategoryBy();
+      const option = res.map((item) => item.category_name);
+      setTaskCategoryOption(option);
+    } catch (error) {
+      console.error("Error fetching category:", error);
+    }
+  }, [getCategoryBy]);
 
   useEffect(() => {
     try {
       fetchTasks();
-      fetchCategory()
+      fetchCategory();
     } catch (error) {
       console.error("Error fetching tasks:", error);
     } finally {
       setLoading(false);
     }
-  }, [fetchTasks]);
-
-  const fetchCategory = async () => {
-    try {
-      const { docs: res } = await getCategoryBy();
-      const option = res.map((item) => item.category_name);
-      setTaskCategoryOption(option)
-    } catch (error) {
-      console.error("Error fetching category:", error);
-    }
-  };
+  }, [fetchTasks, fetchCategory]);
 
   const addTask = async () => {
     if (!task.text.trim()) {
@@ -255,7 +255,9 @@ const TodoListPage: React.FC = () => {
           value={task.text}
           onChange={(e) => setTask({ ...task, text: e.target.value })}
           onKeyUp={(e) => {
-            e.key === 'Enter' && addTask()
+            if (e.key === "Enter") {
+              addTask();
+            }
           }}
           className="w-80"
           sx={{

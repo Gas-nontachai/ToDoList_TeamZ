@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import {
     Dialog,
@@ -33,18 +33,18 @@ const UpdateTask: React.FC<UpdateTaskProps> = ({ onClose, open, onRefresh, task_
         completedAt: undefined,
     });
 
-    useEffect(() => {
-        if (open) fetchTask();
-    }, [open]);
-
-    const fetchTask = async () => {
+    const fetchTask = useCallback(async () => {
         try {
             const res = await getTaskByID({ task_id });
             setTask(res);
         } catch (error) {
             console.error("Error fetching task:", error);
         }
-    };
+    }, [getTaskByID, task_id]);
+
+    useEffect(() => {
+        if (open) fetchTask();
+    }, [open, fetchTask]);
 
     const handleUpdate = async () => {
         try {

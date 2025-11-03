@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import {
     Dialog,
@@ -10,7 +10,6 @@ import {
     TextField,
     Card,
     IconButton,
-    CardContent,
     Typography,
     ListItem,
     List,
@@ -18,7 +17,6 @@ import {
     Stack,
     ListItemSecondaryAction,
     InputAdornment,
-    Box,
     Divider,
 } from "@mui/material";
 import { Add, Delete, Edit, Clear } from "@mui/icons-material";
@@ -39,18 +37,18 @@ const UpdateCategory: React.FC<UpdateCategoryProps> = ({ onClose, open, onRefres
 
     const isEditMode = category.category_id !== "";
 
-    useEffect(() => {
-        if (open) fetchCategory();
-    }, [open]);
-
-    const fetchCategory = async () => {
+    const fetchCategory = useCallback(async () => {
         try {
             const { docs: res } = await getCategoryBy();
             setCategories(res);
         } catch (error) {
             console.error("Error fetching category:", error);
         }
-    };
+    }, [getCategoryBy]);
+
+    useEffect(() => {
+        if (open) fetchCategory();
+    }, [open, fetchCategory]);
 
     const resetForm = () => {
         setCategory({ category_id: "", category_name: "" });
@@ -92,6 +90,7 @@ const UpdateCategory: React.FC<UpdateCategoryProps> = ({ onClose, open, onRefres
             }
 
             await fetchCategory();
+            onRefresh();
             resetForm();
         } catch (error) {
             console.error("Error saving category:", error);
@@ -114,6 +113,7 @@ const UpdateCategory: React.FC<UpdateCategoryProps> = ({ onClose, open, onRefres
             try {
                 await deleteCategoryBy({ category_id: id });
                 await fetchCategory();
+                onRefresh();
                 Swal.fire({
                     icon: "success",
                     title: "Category deleted successfully!",
