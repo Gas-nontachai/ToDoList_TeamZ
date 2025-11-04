@@ -467,7 +467,9 @@ const TodoListPage: React.FC = () => {
           <Box display="flex" flexDirection="column" alignItems="center" mt={4}>
             <AssignmentTurnedIn sx={{ fontSize: 48, color: "#9CA3AF" }} />
             <Typography variant="h6" color="textSecondary" sx={{ fontWeight: "500", mt: 1 }}>
-              No pending tasks
+              {search_query.trim() !== "" && incomplete_tasks.length === 0
+                ? "No results found"
+                : "No pending tasks"}
             </Typography>
           </Box>
         )
