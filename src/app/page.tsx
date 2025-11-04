@@ -121,13 +121,30 @@ const TodoListPage: React.FC = () => {
   const addTask = async () => {
     if (!task.text.trim()) {
       Swal.fire({
-        icon: 'error',
-        title: 'Error!',
-        text: 'Task description cannot be empty.',
-        toast: true,
-        position: 'top-end',
-        showConfirmButton: false,
-        timer: 2000,
+      icon: 'error',
+      title: 'Error!',
+      text: 'Task description cannot be empty.',
+      toast: true,
+      position: 'top-end',
+      showConfirmButton: false,
+      timer: 2000,
+      });
+      return;
+    }
+
+    const isDuplicate = tasks.some(
+      existingTask => existingTask.text.toLowerCase() === task.text.toLowerCase()
+    );
+
+    if (isDuplicate) {
+      Swal.fire({
+      icon: 'error',
+      title: 'Error!',
+      text: 'This task already exists!',
+      toast: true,
+      position: 'top-end',
+      showConfirmButton: false,
+      timer: 2000,
       });
       return;
     }
