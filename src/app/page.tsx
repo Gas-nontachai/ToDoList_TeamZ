@@ -286,7 +286,7 @@ const TodoListPage: React.FC = () => {
                   sx={{ minWidth: "100px", marginRight: "8px" }}
                   renderValue={(selected) =>
                     selected === "" ? (
-                      <em>{task_category_option.length === 0 ? "กำลังโหลด..." : "เลือกหมวดหมู่"}</em>
+                      <em>{task_category_option.length === 0 ? "Loading..." : "Select category"}</em>
                     ) : (
                       selected
                     )
@@ -301,7 +301,7 @@ const TodoListPage: React.FC = () => {
                     ))
                   ) : (
                     <MenuItem disabled value="">
-                      <em>ไม่มีข้อมูลหมวดหมู่</em>
+                      <em>No categories available</em>
                     </MenuItem>
                   )}
                 </Select>
