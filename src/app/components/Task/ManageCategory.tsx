@@ -55,7 +55,9 @@ const UpdateCategory: React.FC<UpdateCategoryProps> = ({ onClose, open, onRefres
     };
 
     const handleSubmit = async () => {
-        if (!category.category_name.trim()) {
+        const name = category.category_name.trim();
+
+        if (!name) {
             return Swal.fire({
                 icon: "error",
                 title: "Please enter a category name",
@@ -67,6 +69,26 @@ const UpdateCategory: React.FC<UpdateCategoryProps> = ({ onClose, open, onRefres
         }
 
         try {
+            const { docs: allCategories } = await getCategoryBy();
+
+            const duplicate = allCategories.find(
+                (c) =>
+                    c.category_name.trim().toLowerCase() === name.toLowerCase() &&
+                    c.category_id !== category.category_id
+            );
+
+            if (duplicate) {
+                return Swal.fire({
+                    icon: "error",
+                    title: "Category already exists",
+                    text: "Please use a different name.",
+                    toast: true,
+                    position: "top-end",
+                    showConfirmButton: false,
+                    timer: 2000,
+                });
+            }
+
             if (isEditMode) {
                 await updateCategoryBy(category);
                 Swal.fire({
@@ -92,8 +114,8 @@ const UpdateCategory: React.FC<UpdateCategoryProps> = ({ onClose, open, onRefres
             await fetchCategory();
             onRefresh();
             resetForm();
-        } catch (error) {
-            console.error("Error saving category:", error);
+        } catch (err) {
+            console.error("Error saving category:", err);
         }
     };
 
