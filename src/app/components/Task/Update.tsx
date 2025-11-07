@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Sparkles, Wand2 } from "lucide-react";
+import { Sparkles, Loader2, CheckCircle2 } from "lucide-react"; // เพิ่ม Loader2, CheckCircle2
 
 import {
   Dialog,
@@ -12,7 +12,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,6 +43,9 @@ const emptyTask: Task = {
   completedAt: undefined,
 };
 
+// 💡 กำหนด General ID ให้สอดคล้องกับ TodoListPage
+const GENERAL_ID = "default_general";
+
 const UpdateTask: React.FC<UpdateTaskProps> = ({
   onClose,
   open,
@@ -55,6 +57,7 @@ const UpdateTask: React.FC<UpdateTaskProps> = ({
 
   const [task, setTask] = useState<Task>(emptyTask);
   const [categories, setCategories] = useState<string[]>([]);
+  const [isUpdating, setIsUpdating] = useState(false); // State สำหรับปุ่ม Loading
 
   const fetchTask = useCallback(async () => {
     if (!task_id) {
@@ -72,7 +75,12 @@ const UpdateTask: React.FC<UpdateTaskProps> = ({
   const fetchCategories = useCallback(async () => {
     try {
       const { docs } = await getCategoryBy();
-      setCategories(docs.map((item) => item.category_name));
+      // 💡 รวม General ID เข้าไปใน categories
+      const categoryNames = docs.map((item) => item.category_name);
+      if (!categoryNames.includes(GENERAL_ID)) {
+        categoryNames.unshift(GENERAL_ID); // ให้ General เป็นตัวเลือกแรกเสมอ
+      }
+      setCategories(categoryNames);
     } catch (error) {
       console.error("Error fetching categories:", error);
     }
@@ -85,9 +93,16 @@ const UpdateTask: React.FC<UpdateTaskProps> = ({
     }
   }, [open, fetchTask, fetchCategories]);
 
+  const getCategoryDisplayName = (categoryId: string) => {
+    return categoryId === GENERAL_ID ? "General" : categoryId;
+  };
+
   const selectedCategory = useMemo(() => {
-    if (!task.category) return undefined;
-    return categories.includes(task.category) ? task.category : undefined;
+    // 💡 ใช้ GENERAL_ID เป็น fallback หาก category ที่บันทึกไว้ไม่พบใน options
+    if (!task.category || !categories.includes(task.category)) {
+      return GENERAL_ID;
+    }
+    return task.category;
   }, [task.category, categories]);
 
   const handleUpdate = async () => {
@@ -96,6 +111,7 @@ const UpdateTask: React.FC<UpdateTaskProps> = ({
       return;
     }
 
+    setIsUpdating(true);
     try {
       await updateTaskBy(task);
       toast.success("Task updated successfully!");
@@ -106,6 +122,8 @@ const UpdateTask: React.FC<UpdateTaskProps> = ({
       toast.error("Failed to update task", {
         description: "Please try again in a moment.",
       });
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -118,21 +136,28 @@ const UpdateTask: React.FC<UpdateTaskProps> = ({
         }
       }}
     >
-      <DialogContent className="max-w-lg rounded-3xl border border-primary/20 bg-white/85 p-0 shadow-2xl backdrop-blur">
-        <DialogHeader className="space-y-2 rounded-t-3xl bg-gradient-to-r from-pink-100/80 via-amber-100/70 to-sky-100/70 px-6 py-5">
-          <DialogTitle className="flex items-center gap-2 text-lg font-semibold text-foreground">
+      <DialogContent 
+        // 💡 ปรับ Dark Mode Style
+        className="max-w-lg rounded-none border border-gray-700 bg-gray-900 p-0 shadow-2xl text-white"
+      >
+        <DialogHeader 
+          // 💡 ปรับ Header Style ให้เข้มขึ้น
+          className="space-y-2 rounded-t-none border-b border-gray-700 bg-gray-800 px-6 py-5"
+        >
+          <DialogTitle className="flex items-center gap-2 text-xl font-semibold text-white">
             <Sparkles className="h-5 w-5 text-primary" />
-            Edit task
+            Edit Task
           </DialogTitle>
-          <DialogDescription className="text-sm leading-relaxed text-muted-foreground">
-            Refresh the wording, switch categories, or mark it complete — perfect
-            for tidying both everyday and eccentric tasks.
+          <DialogDescription className="text-sm leading-relaxed text-gray-400">
+            Refresh the wording, switch categories, or mark it complete.
           </DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-4 px-6 py-5">
           <div className="space-y-2">
-            <Label htmlFor="update-task-name">Task name</Label>
+            <Label htmlFor="update-task-name" className="text-gray-400">
+              Task name
+            </Label>
             <Input
               id="update-task-name"
               value={task.text}
@@ -140,28 +165,36 @@ const UpdateTask: React.FC<UpdateTaskProps> = ({
                 setTask({ ...task, text: event.target.value })
               }
               maxLength={100}
-              className="rounded-2xl border-2 border-primary/10 bg-white/80"
+              // 💡 ปรับ Input Style
+              className="rounded-none border-gray-700 bg-gray-800 text-white placeholder:text-gray-500 focus-visible:ring-0 focus-visible:border-primary"
             />
-            <div className="flex justify-between text-xs text-muted-foreground">
+            <div className="flex justify-between text-xs text-gray-500">
               <span>{(task.text ?? "").length}/100 characters</span>
-              <span>Keep it punchy and fun!</span>
+              <span className="text-primary/70">Keep it punchy and fun!</span>
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="update-task-category">Category</Label>
+            <Label htmlFor="update-task-category" className="text-gray-400">
+              Category
+            </Label>
             <Select
               value={selectedCategory}
               onValueChange={(value) => setTask({ ...task, category: value })}
-              disabled={categories.length === 0}
             >
               <SelectTrigger
                 id="update-task-category"
-                className="rounded-2xl border-2 border-primary/10 bg-white/80"
+                // 💡 ปรับ Select Style
+                className="rounded-none border-gray-700 bg-gray-800 text-white hover:border-primary/50"
               >
-                <SelectValue placeholder="Choose a category" />
+                <SelectValue placeholder="Choose a category">
+                  {getCategoryDisplayName(selectedCategory)}
+                </SelectValue>
               </SelectTrigger>
-              <SelectContent className="rounded-2xl border border-primary/20">
+              <SelectContent 
+                // 💡 ปรับ Select Content Style
+                className="rounded-none border border-gray-700 bg-gray-800 text-white"
+              >
                 {categories.length === 0 ? (
                   <SelectItem value="__loading" disabled>
                     No categories available
@@ -169,21 +202,28 @@ const UpdateTask: React.FC<UpdateTaskProps> = ({
                 ) : (
                   categories.map((option) => (
                     <SelectItem key={option} value={option}>
-                      {option}
+                      {getCategoryDisplayName(option)}
                     </SelectItem>
                   ))
                 )}
               </SelectContent>
             </Select>
-            <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+            <div className="flex flex-wrap gap-2 text-xs text-gray-500">
               <span>Currently:</span>
-              <Badge variant="pastel" className="bg-secondary/70">
-                {task.category || "Uncategorized"}
+              <Badge 
+                // 💡 ปรับ Badge Style
+                variant="secondary" 
+                className="rounded-none bg-primary/20 text-primary border-primary/50"
+              >
+                {getCategoryDisplayName(task.category || "Uncategorized")}
               </Badge>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 rounded-2xl border border-primary/10 bg-white/80 px-4 py-3">
+          <div 
+            // 💡 ปรับ Checkbox/Wrapper Style
+            className="flex items-center gap-2 rounded-none border border-gray-700 bg-gray-800 px-4 py-3"
+          >
             <Checkbox
               id="update-task-completed"
               checked={task.completed}
@@ -195,49 +235,52 @@ const UpdateTask: React.FC<UpdateTaskProps> = ({
                   completedAt: isChecked ? new Date() : undefined,
                 });
               }}
-              className="rounded-lg border-primary/40"
+              // 💡 ปรับ Checkbox Style
+              className="rounded-none border-primary/40 data-[state=checked]:bg-primary"
             />
             <div className="flex flex-col">
-              <Label htmlFor="update-task-completed" className="text-sm">
+              <Label htmlFor="update-task-completed" className="text-sm text-white">
                 Mark as completed
               </Label>
-              <span className="text-xs text-muted-foreground">
+              <span className="text-xs text-gray-500">
                 Perfect for celebrating progress or undoing it quickly.
               </span>
             </div>
           </div>
-
-          <Alert variant="info" className="flex items-start gap-3">
-            <Wand2 className="mt-0.5 h-4 w-4 text-sky-500" />
-            <div className="space-y-1">
-              <p className="text-sm font-semibold text-foreground">
-                Sprinkle in the context
-              </p>
-              <p className="text-sm text-muted-foreground">
-                Categories like <span className="font-medium">Brain Dump</span>,{" "}
-                <span className="font-medium">Dream Projects</span>, or{" "}
-                <span className="font-medium">Someday Ideas</span> keep unusual
-                tasks organised without losing their charm.
-              </p>
-            </div>
-          </Alert>
         </div>
 
-        <DialogFooter className="gap-2 rounded-b-3xl bg-white/70 px-6 py-4">
+        <DialogFooter 
+          // 💡 ปรับ Footer Style
+          className="gap-2 rounded-b-none border-t border-gray-700 bg-gray-800 px-6 py-4"
+        >
           <Button
             type="button"
             variant="outline"
             onClick={onClose}
-            className="rounded-full border-primary/20 text-primary hover:bg-primary/10"
+            // 💡 ปรับ Cancel Button Style
+            className="rounded-none border-gray-700 text-gray-400 hover:bg-gray-700 hover:text-white"
+            disabled={isUpdating}
           >
             Cancel
           </Button>
           <Button
             type="button"
             onClick={handleUpdate}
-            className="rounded-full bg-primary text-primary-foreground shadow-md shadow-primary/30 hover:bg-primary/80"
+            // 💡 ปรับ Save Button Style
+            className="rounded-none bg-primary text-primary-foreground shadow-md shadow-primary/30 hover:bg-primary/80"
+            disabled={isUpdating}
           >
-            Save changes
+            {isUpdating ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <CheckCircle2 className="h-4 w-4 mr-2" />
+                Save changes
+              </>
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>

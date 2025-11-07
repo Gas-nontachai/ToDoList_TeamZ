@@ -76,26 +76,31 @@ export const ConfirmDialogProvider: React.FC<
     <ConfirmDialogContext.Provider value={contextValue}>
       {children}
       <AlertDialog open={open}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{pendingDialog?.title}</AlertDialogTitle>
+        <AlertDialogContent className="rounded-none border border-gray-700 bg-gray-900 p-0">
+          <AlertDialogHeader className="space-y-2 border-b border-gray-700 bg-gray-900 px-6 py-5">
+            <AlertDialogTitle className="text-xl font-bold text-white">
+              {pendingDialog?.title}
+            </AlertDialogTitle>
             {pendingDialog?.description ? (
-              <AlertDialogDescription>
+              <AlertDialogDescription className="text-sm leading-relaxed text-gray-400">
                 {pendingDialog.description}
               </AlertDialogDescription>
             ) : null}
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => closeDialog(false)}>
+          <AlertDialogFooter className="border-t border-gray-700 bg-gray-800 px-6 py-4">
+            <AlertDialogCancel
+              onClick={() => closeDialog(false)}
+              className="rounded-none border border-gray-700 bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white"
+            >
               {pendingDialog?.cancelText ?? "Cancel"}
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={() => closeDialog(true)}
-              className={
+              className={`rounded-none font-semibold border ${
                 pendingDialog?.variant === "destructive"
-                  ? "bg-destructive text-destructive-foreground hover:bg-destructive/80"
-                  : undefined
-              }
+                  ? "border-red-700 bg-red-900/30 text-red-400 hover:bg-red-900/50"
+                  : "border-gray-700 bg-gray-700 text-white hover:bg-gray-600"
+              }`}
             >
               {pendingDialog?.confirmText ?? "Confirm"}
             </AlertDialogAction>
@@ -115,4 +120,3 @@ export const useConfirmDialog = () => {
   }
   return context;
 };
-
