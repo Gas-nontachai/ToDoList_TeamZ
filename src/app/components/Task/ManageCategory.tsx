@@ -7,8 +7,7 @@ import {
   RotateCcw,
   Trash2,
   Pencil,
-  Stars,
-  Sparkles,
+  ListTodo,
 } from "lucide-react";
 
 import {
@@ -19,7 +18,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -38,14 +36,8 @@ interface UpdateCategoryProps {
 
 const emptyCategory: Category = { category_id: "", category_name: "" };
 
-const quickIdeas = [
-  "Self-care",
-  "Focus sprint",
-  "Brain dump",
-  "Weird & wonderful",
-  "Errands",
-  "Study lab",
-];
+const GeneralCategory: Category = { category_id: "default_general", category_name: "General" };
+const GENERAL_ID = "default_general";
 
 const ManageCategory: React.FC<UpdateCategoryProps> = ({
   onClose,
@@ -67,7 +59,8 @@ const ManageCategory: React.FC<UpdateCategoryProps> = ({
   const fetchCategory = useCallback(async () => {
     try {
       const { docs } = await getCategoryBy();
-      setCategories(docs);
+      const categoriesWithGeneral = [GeneralCategory, ...docs];
+      setCategories(categoriesWithGeneral);
     } catch (error) {
       console.error("Error fetching category:", error);
     }
@@ -85,12 +78,14 @@ const ManageCategory: React.FC<UpdateCategoryProps> = ({
 
   const handleSubmit = async () => {
     const name = category.category_name.trim();
-
     if (!name) {
       toast.error("Please enter a category name");
       return;
     }
-
+    if (category.category_id === GENERAL_ID) {
+      toast.error("Cannot modify the General category.");
+      return;
+    }
     try {
       const { docs: allCategories } = await getCategoryBy();
       const duplicate = allCategories.find(
@@ -123,6 +118,11 @@ const ManageCategory: React.FC<UpdateCategoryProps> = ({
   };
 
   const handleDelete = async (id: string) => {
+    if (id === GENERAL_ID) {
+      toast.error("The General category cannot be deleted.");
+      return;
+    }
+
     const confirmed = await confirmDialog({
       title: "Delete this category?",
       description: "Tasks won't be removed, but they will lose this tag.",
@@ -157,44 +157,22 @@ const ManageCategory: React.FC<UpdateCategoryProps> = ({
         }
       }}
     >
-      <DialogContent className="max-w-xl rounded-3xl border border-primary/20 bg-white/85 p-0 shadow-xl backdrop-blur">
-        <DialogHeader className="space-y-2 rounded-t-3xl bg-gradient-to-r from-pink-100/80 via-amber-100/70 to-sky-100/70 px-6 py-5">
-          <DialogTitle className="flex items-center gap-2 text-lg font-semibold text-foreground">
-            <Sparkles className="h-5 w-5 text-primary" />
-            Manage categories
+      <DialogContent className="max-w-xl rounded-none border border-gray-700 bg-gray-900 p-0 shadow-xl">
+        <DialogHeader className="space-y-2 border-b border-gray-700 bg-gray-900 px-6 py-5">
+          <DialogTitle className="flex items-center gap-2 text-2xl font-bold text-white">
+            <ListTodo className="h-6 w-6 text-primary" />
+            Manage Categories
           </DialogTitle>
-          <DialogDescription className="text-sm leading-relaxed text-muted-foreground">
-            Keep things flexible: mix practical groups with playful ones so your
-            tasks feel at home — even the unexpected ones.
+          <DialogDescription className="text-sm leading-relaxed text-gray-400">
+            Organize your tasks by meaningful categories.
           </DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-5 px-6 py-5">
-          <div className="space-y-3">
-            <div className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-              <Stars className="h-4 w-4 text-pink-500" />
-              Quick ideas
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {quickIdeas.map((idea) => (
-                <Button
-                  key={idea}
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  className="rounded-full bg-white/80 px-3 py-1 text-xs text-foreground shadow-sm hover:bg-primary/10"
-                  onClick={() =>
-                    setCategory({ category_id: "", category_name: idea })
-                  }
-                >
-                  {idea}
-                </Button>
-              ))}
-            </div>
-          </div>
-
           <div className="space-y-2">
-            <Label htmlFor="category-name">Category name</Label>
+            <Label htmlFor="category-name" className="text-gray-400">
+              Category name
+            </Label>
             <div className="flex gap-2">
               <Input
                 id="category-name"
@@ -212,14 +190,15 @@ const ManageCategory: React.FC<UpdateCategoryProps> = ({
                     handleSubmit();
                   }
                 }}
-                className="rounded-2xl border-2 border-primary/10 bg-white/80"
+                className="rounded-none border border-gray-700 bg-gray-800 text-white placeholder:text-gray-600 focus-visible:ring-0 focus-visible:border-primary"
+                disabled={category.category_id === GENERAL_ID}
               />
               <Button
                 type="button"
-                variant="outline"
+                variant="default"
                 size="icon"
                 onClick={resetForm}
-                className="rounded-full border-primary/20 text-primary hover:bg-primary/10"
+                className="rounded-none border border-gray-700 bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-primary"
               >
                 <RotateCcw className="h-4 w-4" />
                 <span className="sr-only">Reset</span>
@@ -229,8 +208,14 @@ const ManageCategory: React.FC<UpdateCategoryProps> = ({
           <Button
             type="button"
             onClick={handleSubmit}
-            className="w-full gap-2 rounded-full shadow-sm"
-            variant={isEditMode ? "secondary" : "default"}
+            variant="default"
+            disabled={category.category_id === GENERAL_ID}
+            className={`w-full gap-2 rounded-none shadow-sm h-10 font-semibold border border-gray-700
+              ${isEditMode
+                ? "bg-gray-700 text-primary hover:bg-gray-600"
+                : "bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-primary"
+              }
+            `}
           >
             {isEditMode ? (
               <>
@@ -244,61 +229,62 @@ const ManageCategory: React.FC<UpdateCategoryProps> = ({
               </>
             )}
           </Button>
-
-          <Alert variant="playful" className="flex items-start gap-3">
-            <Sparkles className="mt-0.5 h-4 w-4 text-pink-500" />
-            <div className="space-y-1">
-              <p className="text-sm font-semibold text-foreground">
-                Weird &amp; wonderful welcome
-              </p>
-              <p className="text-sm text-muted-foreground">
-                Add a catch-all category for experiments, ideas, or anything
-                that doesn&apos;t fit yet. You can always rename it later.
-              </p>
-            </div>
-          </Alert>
-
-          <Card className="border border-primary/20">
+          <Card className="rounded-none border border-gray-700 bg-gray-800">
             <CardContent className="p-0">
-              <ScrollArea className="max-h-72">
-                <div className="divide-y divide-primary/10">
+              {/* ⬅️ แก้ไข: ใช้ความสูงคงที่ h-[200px] และเพิ่ม class "scrollbar-show" */}
+              <ScrollArea className="h-[200px] scrollbar-show">
+                <div className="divide-y divide-gray-700">
                   {categories.length > 0 ? (
                     categories.map((cat) => (
                       <div
                         key={cat.category_id}
-                        className="flex items-center justify-between gap-3 px-4 py-3"
+                        className={`flex items-center justify-between gap-3 px-4 py-3 transition 
+                          ${cat.category_id === GENERAL_ID 
+                            ? 'bg-gray-700/50' 
+                            : 'hover:bg-gray-700'
+                          }`
+                        }
                       >
-                        <span className="text-sm font-medium text-foreground">
+                        <span className="text-sm font-medium text-white">
                           {cat.category_name}
+                          {cat.category_id === GENERAL_ID && (
+                            <span className="ml-2 text-xs text-gray-500">(Default)</span>
+                          )}
                         </span>
                         <div className="flex items-center gap-2">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setCategory(cat)}
-                            className="gap-1 rounded-full border-primary/20 text-primary hover:bg-primary/10"
-                          >
-                            <Pencil className="h-3.5 w-3.5" />
-                            Edit
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="destructive"
-                            size="icon"
-                            onClick={() => handleDelete(cat.category_id)}
-                            className="rounded-full"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                            <span className="sr-only">
-                              Delete {cat.category_name}
-                            </span>
-                          </Button>
+                          {cat.category_id !== GENERAL_ID ? (
+                            <>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setCategory(cat)}
+                                className="gap-1 rounded-none text-gray-400 hover:bg-primary/20 hover:text-primary"
+                              >
+                                <Pencil className="h-3.5 w-3.5" />
+                                Edit
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="destructive"
+                                size="icon"
+                                onClick={() => handleDelete(cat.category_id)}
+                                className="rounded-none h-8 w-8"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                                <span className="sr-only">
+                                  Delete {cat.category_name}
+                                </span>
+                              </Button>
+                            </>
+                          ) : (
+                            <span className="text-sm text-gray-500 italic">System Default</span>
+                          )}
                         </div>
                       </div>
                     ))
                   ) : (
-                    <p className="p-4 text-sm text-muted-foreground">
+                    <p className="p-4 text-sm text-gray-500">
                       No categories found.
                     </p>
                   )}
@@ -308,12 +294,12 @@ const ManageCategory: React.FC<UpdateCategoryProps> = ({
           </Card>
         </div>
 
-        <DialogFooter className="rounded-b-3xl bg-white/70 px-6 py-4">
+        <DialogFooter className="border-t border-gray-700 bg-gray-800 px-6 py-4">
           <Button
             type="button"
             variant="outline"
             onClick={onClose}
-            className="rounded-full border-primary/20 text-primary hover:bg-primary/10"
+            className="rounded-none border-gray-700 text-gray-400 hover:bg-gray-700 hover:text-white"
           >
             Close
           </Button>
