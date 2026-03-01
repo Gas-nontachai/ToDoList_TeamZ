@@ -1,130 +1,69 @@
+# ToDoList Team Z
 
-# Todolist - แอปพลิเคชัน Next.js
-
-แอปพลิเคชัน **Todolist** ที่สร้างด้วย **Next.js** ใช้ **Material-UI (MUI)** สำหรับส่วนประกอบของ UI และ **TailwindCSS** สำหรับการจัดสไตล์ มีฟังก์ชันการจัดเรียงตามวันที่ และการกรองตามประเภทงาน พร้อมเก็บข้อมูลไว้ใน **IndexedDB**
-
-## Demo
-
-คุณสามารถดูแอปพลิเคชันตัวอย่างได้ที่: [Todolist Demo](https://todolist-nontachai.netlify.app/)
-
-## ฟีเจอร์
-
-- **จัดเรียงตามวันที่**: สามารถจัดเรียงงานตามวันที่ครบกำหนด
-- **กรองตามประเภทงาน**: กรองงานตามประเภทที่เลือก
-- **CRUD Operations**: สร้าง, อ่าน, อัปเดต, ลบ งาน
-- **ค้นหา**: ค้นหางานตามชื่อ
-- **ทำเครื่องหมายงานที่เสร็จสมบูรณ์**: ทำเครื่องหมายงานว่าเสร็จสมบูรณ์หรือยังไม่เสร็จ
-- **เก็บข้อมูลใน IndexedDB**: ข้อมูลงานจะถูกเก็บใน **IndexedDB** เพื่อให้สามารถเข้าถึงข้อมูลได้แม้ในโหมดออฟไลน์
-
-## เทคโนโลยีที่ใช้
-
-- **Next.js**: เฟรมเวิร์กสำหรับสร้างแอปพลิเคชันที่เรนเดอร์บนเซิร์ฟเวอร์
-- **Material-UI (MUI)**: ใช้สำหรับสร้างส่วนประกอบ UI ที่ดูทันสมัย
-- **TailwindCSS**: ใช้สำหรับการจัดสไตล์ให้กับแอปพลิเคชัน
-- **IndexedDB**: ใช้สำหรับเก็บข้อมูลในเบราว์เซอร์เพื่อให้แอปทำงานได้ในโหมดออฟไลน์
-
-## การติดตั้ง
-
-หากต้องการรันโปรเจ็กต์นี้ในเครื่องของคุณ ให้ทำตามขั้นตอนนี้:
-
-1. โคลนโปรเจ็กต์:
-
-   ```bash
-   git clone https://github.com/Gas-nontachai/Skuberg_Test_Frontend_ToDoList_Nontachai.git
-   ```
-
-2. เข้าไปในโฟลเดอร์โปรเจ็กต์:
-
-   ```bash
-   cd Skuberg_Test_Frontend_ToDoList_Nontachai
-   ```
-
-3. ติดตั้ง dependencies:
-
-   ```bash
-   npm install
-   ```
-
-4. รันเซิร์ฟเวอร์พัฒนา:
-
-   ```bash
-   npm run dev
-   ```
-
-5. เปิด [http://localhost:3000](http://localhost:3000) ในเบราว์เซอร์ของคุณเพื่อดูแอป
-
-## การใช้งาน
-
-1. เพิ่มงานใหม่โดยการพิมพ์ในช่องกรอกข้อมูลและคลิกปุ่ม **Add Task**
-2. แก้ไขงานโดยการคลิกที่ชื่อของงาน
-3. ลบงานโดยการคลิกปุ่ม **Delete** ข้างๆ งานนั้น
-4. ทำเครื่องหมายงานว่าเสร็จสมบูรณ์โดยการคลิกปุ่ม **Complete**
-5. ใช้ช่องค้นหาเพื่อค้นหางานเฉพาะ
-6. จัดเรียงงานตามวันที่โดยการเลือกจากเมนู **Sort by Date**
-7. กรองงานตามประเภทงานโดยการเลือกจากเมนู **Filter by Category** 
-
----
-
-# Todolist - Next.js Application
-
-This is a simple **Todolist** application built using **Next.js** with **Material-UI (MUI)** for UI components and **TailwindCSS** for styling. It includes functionalities for sorting tasks by date, filtering tasks by category, and stores data using **IndexedDB**.
+ToDoList app built with Next.js (App Router), React 19, MUI, Tailwind CSS, and IndexedDB for local persistence.
 
 ## Demo
 
-You can view the live application here: [Todolist Demo](https://todolist-nontachai.netlify.app/)
+- https://todolist-nontachai.netlify.app/
 
 ## Features
 
-- **Sort by Date**: Sort tasks by their due date.
-- **Filter by Category**: Filter tasks based on selected categories.
-- **CRUD Operations**: Create, Read, Update, and Delete tasks.
-- **Search**: Search for tasks by name.
-- **Complete Task**: Mark tasks as completed or incomplete.
-- **IndexedDB**: Stores task data in **IndexedDB** for offline access.
+- Create, read, update, delete tasks
+- Mark task status (done / not done)
+- Search tasks by name
+- Sort tasks by due date
+- Filter tasks by category
+- Persist data in IndexedDB (client-side/offline friendly)
 
-## Technologies Used
+## Tech Stack
 
-- **Next.js**: A React framework for building server-side rendered applications.
-- **Material-UI (MUI)**: For creating modern UI components.
-- **TailwindCSS**: For styling the application.
-- **IndexedDB**: For storing task data in the browser to support offline functionality.
+- Next.js `15.5.10`
+- React `19`
+- TypeScript `5`
+- MUI `7`
+- Tailwind CSS `4`
+- `idb` for IndexedDB access
 
-## Installation
+## Prerequisites
 
-To run this project locally, follow these steps:
+- Node.js `20` or later
+- npm `10` or later
 
-1. Clone the repository:
+## Getting Started
 
-   ```bash
-   git clone https://github.com/Gas-nontachai/Skuberg_Test_Frontend_ToDoList_Nontachai.git
-   ```
+```bash
+git clone https://github.com/Gas-nontachai/Skuberg_Test_Frontend_ToDoList_Nontachai.git
+cd Skuberg_Test_Frontend_ToDoList_Nontachai
+npm install
+npm run dev
+```
 
-2. Navigate into the project directory:
+Open http://localhost:3000
 
-   ```bash
-   cd Skuberg_Test_Frontend_ToDoList_Nontachai
-   ```
+## Available Scripts
 
-3. Install dependencies:
+- `npm run dev` - Start development server (Turbopack)
+- `npm run build` - Build production bundle
+- `npm run start` - Start production server
+- `npm run lint` - Run Next.js lint
+- `npm run lint:fix` - Run ESLint with auto-fix
 
-   ```bash
-   npm install
-   ```
+## CI
 
-4. Run the development server:
+GitHub Actions workflow is configured at `.github/workflows/ci.yml`:
 
-   ```bash
-   npm run dev
-   ```
+- Trigger: push to `main`/`deploy` and pull requests
+- Runtime: Node.js 20
+- Steps: install (`npm ci`), lint, build
 
-5. Open [http://localhost:3000](http://localhost:3000) in your browser to view the application.
+## Security Note
 
-## Usage
+Next.js has been upgraded to `15.5.10` to include fixes for known vulnerabilities affecting older `15.x` versions.
 
-1. Add a new task by typing in the input field and clicking the **Add Task** button.
-2. Edit a task by clicking on the task name.
-3. Delete a task by clicking the **Delete** button next to the task.
-4. Mark a task as completed by clicking the **Complete** button.
-5. Use the search bar to find specific tasks.
-6. Sort tasks by date by selecting from the **Sort by Date** dropdown.
-7. Filter tasks by category by selecting from the **Filter by Category** dropdown. 
+## Project Structure
+
+```text
+src/app/            # Next.js app router pages/components
+public/             # Static assets
+.github/workflows/  # CI workflows
+```
